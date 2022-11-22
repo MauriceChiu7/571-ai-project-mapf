@@ -556,7 +556,7 @@ with tf.device("/gpu:0"):
     with tf.Session(config=config) as sess:
         sess.run(tf.global_variables_initializer())
         coord = tf.train.Coordinator()
-        if load_model == True:
+        if load_model == False:
             print('Loading Model...')
             if not TRAINING:
                 with open(model_path + '/checkpoint', 'w') as file:
