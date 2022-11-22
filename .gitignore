@@ -89,7 +89,6 @@ auto/
 ###################
 __pycache__/*
 */results/
-od_mstar3/*
 */primal_results/
 */train_primal/*
 */saved_environments
