@@ -152,6 +152,9 @@ class Worker:
         on_goals = rollout[:, 8]
         train_value = rollout[:, -1]
 
+        # print(rollout)
+        # exit()
+
         # Here we take the rewards and values from the rollout, and use them to 
         # generate the advantage and discounted returns. (With bootstrapping)
         # The advantage function uses "Generalized Advantage Estimation"

@@ -229,6 +229,7 @@ class MAPFEnv(gym.Env):
             return True
 
     def getObstacleMap(self):
+        print(self.world.state.shape)
         return (self.world.state == -1).astype(int)
 
     def getGoals(self):
@@ -508,6 +509,55 @@ class MAPFEnv(gym.Env):
             world[i, j] = 0
         return path
 
+    def get_density_reward(self, agent_id):
+        '''calculates how many robots are in the FOV of the agent. obstacles are treated as agents'''
+        fov_density_size = 5
+        obs_as_agent = True
+        density_threshold = 0.7
+        
+        other_robots = []
+        other_locations = [] # probably not needed
+        
+        top_left = (self.world.getPos(agent_id)[0] - fov_density_size // 2,
+                    self.world.getPos(agent_id)[1] - fov_density_size // 2)
+        bottom_right = (top_left[0] + fov_density_size,
+                        top_left[1] + fov_density_size)
+        for agent in range(1, self.num_agents):
+            if agent == agent_id: continue
+            x, y = self.world.getPos(agent)
+            if x < top_left[0] or x >= bottom_right[0] or y >= bottom_right[1] or y < top_left[1]:
+                continue
+            other_robots.append(agent)
+            other_locations.append((x, y)) # probably not needed
+
+        num_agents_in_fov = len(other_robots)
+        
+        if obs_as_agent:        
+            world = self.getObstacleMap()
+
+            # obs_shape = (self.observation_size, self.observation_size)
+            # obs_map = np.zeros(obs_shape)
+            
+            # for i in range(top_left[0], top_left[0] + self.observation_size):
+            #     for j in range(top_left[1], top_left[1] + self.observation_size):
+            #         if i >= self.world.state.shape[0] or i < 0 or j >= self.world.state.shape[1] or j < 0:
+            #             # out of bounds, just treat as an obstacle
+            #             obs_map[i - top_left[0], j - top_left[1]] = 1
+            #             continue
+            #         if self.world.state[i, j] == -1:
+            #             # obstacles
+            #             obs_map[i - top_left[0], j - top_left[1]] = 1
+
+            print(world)
+            exit()
+            # num_agents_in_fov += num_of_obstacles
+        
+        if num_agents_in_fov/fov_density_size**2 >= density_threshold:
+            return -0.3
+        else:
+            return 0.0
+            
+
     def get_blocking_reward(self, agent_id):
         '''calculates how many robots the agent is preventing from reaching goal
         and returns the necessary penalty'''
@@ -592,6 +642,7 @@ class MAPFEnv(gym.Env):
                 reward = ACTION_COST
             else:
                 reward = ACTION_COST
+        reward += self.get_density_reward(agent_id)
         self.individual_rewards[agent_id - 1] = reward
 
         if JOINT:

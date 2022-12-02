@@ -44,21 +44,40 @@ class ACNet:
 
             # Loss Functions
             self.value_loss = tf.reduce_sum(
-                self.train_value * tf.square(self.target_v - tf.reshape(self.value, shape=[-1])))
+                self.train_value * tf.square(
+                    self.target_v - tf.reshape(
+                        self.value, shape=[-1]
+                    )
+                )
+            )
             self.entropy = - tf.reduce_sum(self.policy * tf.log(tf.clip_by_value(self.policy, 1e-10, 1.0)))
+
+            # for encouraging exploration
             self.policy_loss = - tf.reduce_sum(
                 tf.log(tf.clip_by_value(self.responsible_outputs, 1e-15, 1.0)) * self.advantages)
+            
+            # valid_loss is used for minimizing the log likelihood of selecting an invalid move
             self.valid_loss = - tf.reduce_sum(tf.log(tf.clip_by_value(self.valids, 1e-10, 1.0)) * \
                                               self.train_valid + tf.log(
                 tf.clip_by_value(1 - self.valids, 1e-10, 1.0)) * (1 - self.train_valid))
+            
+            # blocking_loss is used for minimizing the log likelihood of incorrectly predicting blocking
             self.blocking_loss = - tf.reduce_sum(
                 self.target_blockings * tf.log(tf.clip_by_value(self.blocking, 1e-10, 1.0)) \
                 + (1 - self.target_blockings) * tf.log(tf.clip_by_value(1 - self.blocking, 1e-10, 1.0)))
+            
             self.on_goal_loss = - tf.reduce_sum(
                 self.target_on_goals * tf.log(tf.clip_by_value(self.on_goal, 1e-10, 1.0)) \
                 + (1 - self.target_on_goals) * tf.log(tf.clip_by_value(1 - self.on_goal, 1e-10, 1.0)))
-            self.loss = 0.5 * self.value_loss + self.policy_loss + 0.5 * self.valid_loss \
-                        - self.entropy * 0.01 + .5 * self.blocking_loss
+            
+            # self.density_loss = 
+
+            self.loss = 0.5 * self.value_loss \
+                        + self.policy_loss \
+                        + 0.5 * self.valid_loss \
+                        - self.entropy * 0.01 + .5 * self.blocking_loss \
+                        # + self.density_loss
+            
             self.imitation_loss = tf.reduce_mean(
                 tf.contrib.keras.backend.categorical_crossentropy(self.optimal_actions_onehot, self.policy))
 
