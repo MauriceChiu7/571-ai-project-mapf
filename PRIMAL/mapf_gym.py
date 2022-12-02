@@ -512,71 +512,71 @@ class MAPFEnv(gym.Env):
             world[i, j] = 0
         return path
 
-    def get_density_reward(self, agent_id):
-        '''calculates how many robots are in the FOV of the agent. obstacles are treated as agents'''
-        fov_density_size = 5
-        obs_as_agent = True
-        density_threshold = 0.7
+    def get_agt_count(self, agent_id, area_size):
+        robots = []
+        # other_locations = [] # probably not needed
         
-        other_robots = []
-        other_locations = [] # probably not needed
+        top_left = (self.world.getPos(agent_id)[0] - area_size // 2,
+                    self.world.getPos(agent_id)[1] - area_size // 2)
+        bottom_right = (top_left[0] + area_size,
+                        top_left[1] + area_size)
         
-        top_left = (self.world.getPos(agent_id)[0] - fov_density_size // 2,
-                    self.world.getPos(agent_id)[1] - fov_density_size // 2)
-        bottom_right = (top_left[0] + fov_density_size,
-                        top_left[1] + fov_density_size)
         for agent in range(1, self.num_agents):
-            if agent == agent_id: continue
+            # if agent == agent_id: continue # we dont want to count ourselves
             x, y = self.world.getPos(agent)
             if x < top_left[0] or x >= bottom_right[0] or y >= bottom_right[1] or y < top_left[1]:
                 continue
-            other_robots.append(agent)
-            other_locations.append((x, y)) # probably not needed
+            robots.append(agent)
+            # other_locations.append((x, y)) # probably not needed
 
-        num_agents_in_fov = len(other_robots)
+        num_agents_in_fov = len(robots)
+
+        return num_agents_in_fov
+
+    def get_obs_count(self, agent_id, area_size):
+        top_left = (self.world.getPos(agent_id)[0] - area_size // 2,
+                    self.world.getPos(agent_id)[1] - area_size // 2)
+        bottom_right = (top_left[0] + area_size,
+                        top_left[1] + area_size)
         
-        # print(f"num_agents_in_fov: {num_agents_in_fov}")
-
-        if obs_as_agent:        
-            # world = self.getObstacleMap()
-            # print(world)
-            # exit()
-
-            obs_shape = (fov_density_size, fov_density_size)
-            obs_map = np.zeros(obs_shape, dtype=np.int8)
-            
-            for i in range(top_left[0], top_left[0] + fov_density_size):
-                for j in range(top_left[1], top_left[1] + fov_density_size):
-                    if i >= self.world.state.shape[0] or i < 0 or j >= self.world.state.shape[1] or j < 0:
-                        # out of bounds, just treat as an obstacle
-                        obs_map[i - top_left[0], j - top_left[1]] = 1
-                        continue
-                    if self.world.state[i, j] == -1:
-                        # obstacles
-                        obs_map[i - top_left[0], j - top_left[1]] = 1
-
-            # print(f"top_left: {top_left}")
-            # print("world shape:")
-            # print(self.world.state.shape)
-            # print("world:")
-            # print(self.world.state)
-            # print("world obstacle map:")
-            # print((self.world.state == -1).astype(int))
-            # print(f"fov obstacle map:\n{obs_map}")
-            
-            num_of_obstacles = np.sum(obs_map)
-            
-            # print(f"num_of_obstacles:\n{num_of_obstacles}")
-            
-            num_agents_in_fov += num_of_obstacles
-            
-            # print(f"num_agents_in_fov+obs: {num_agents_in_fov}")
+        obs_shape = (area_size, area_size)
+        obs_map = np.zeros(obs_shape, dtype=np.int8)
         
-        density = num_agents_in_fov/(fov_density_size**2)
+        for i in range(top_left[0], top_left[0] + area_size):
+            for j in range(top_left[1], top_left[1] + area_size):
+                if i >= self.world.state.shape[0] or i < 0 or j >= self.world.state.shape[1] or j < 0:
+                    # out of bounds, just treat as an obstacle
+                    obs_map[i - top_left[0], j - top_left[1]] = 1
+                    continue
+                if self.world.state[i, j] == -1:
+                    # obstacles
+                    obs_map[i - top_left[0], j - top_left[1]] = 1
 
-        # print(f"density: {density}")
+        # print(f"top_left: {top_left}")
+        # print("world shape:")
+        # print(self.world.state.shape)
+        # print("world:")
+        # print(self.world.state)
+        # print("world obstacle map:")
+        # print((self.world.state == -1).astype(int))
+        # print(f"fov obstacle map:\n{obs_map}")
+        
+        num_of_obstacles_fov = np.sum(obs_map)
+        
+        return num_of_obstacles_fov
 
-        # exit()
+    def get_density_reward(self, agent_id):
+        '''calculates how many robots are in the FOV of the agent. obstacles are treated as agents'''
+        fov_size_big = 5
+        fov_size_small = 3
+        obs_as_agent = True
+        density_threshold = 0.7
+        
+        num_of_obstacles_fov = self.get_obs_count(agent_id, fov_size_small)
+        num_agents_in_fov = self.get_agt_count(agent_id, fov_size_small)
+
+        free_space_fov = fov_size_small ** 2 - num_of_obstacles_fov
+        density = num_agents_in_fov / free_space_fov
 
         if density >= density_threshold:
             return -0.3
