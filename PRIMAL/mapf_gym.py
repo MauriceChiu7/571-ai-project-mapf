@@ -668,7 +668,7 @@ class MAPFEnv(gym.Env):
                 reward = ACTION_COST
             else:
                 reward = ACTION_COST
-        reward += self.get_density_reward(agent_id) # added density reward
+            reward += self.get_density_reward(agent_id) # added density reward
         self.individual_rewards[agent_id - 1] = reward
 
         if JOINT:

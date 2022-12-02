@@ -61,7 +61,7 @@ SAVE_EPISODE_BUFFER = False
 TRAINING = True
 GREEDY = False
 NUM_EXPS = 100
-MODEL_NUMBER = 6400
+MODEL_NUMBER = 100000 #6400
 
 # Shared arrays for tensorboard
 episode_rewards = [[] for _ in range(NUM_META_AGENTS)]
@@ -130,6 +130,12 @@ class Worker:
             # we calculate the loss differently for imitation
             # if imitation=True the rollout is assumed to have different dimensions:
             # [o[0],o[1],optimal_actions]
+
+            if rollout.size == 0:
+                print("rollout shape: ", rollout.shape)
+                print("rollout: ", rollout)
+                return None
+                
             feed_dict = {global_step: episode_count,
                          self.local_AC.inputs: np.stack(rollout[:, 0]),
                          self.local_AC.goal_pos: np.stack(rollout[:, 1]),
@@ -296,6 +302,8 @@ class Worker:
                     if rollouts[self.metaAgentID] is not None:
                         i_l = self.train(rollouts[self.metaAgentID][self.agentID - 1], sess, gamma, None, rnn_state0,
                                          imitation=True)
+                        if i_l is None:
+                            continue
                         episode_count += 1. / num_workers
                         if self.agentID == 1:
                             summary = tf.Summary()
