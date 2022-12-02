@@ -229,7 +229,10 @@ class MAPFEnv(gym.Env):
             return True
 
     def getObstacleMap(self):
-        print(self.world.state.shape)
+        # print(self.world.state.shape)
+        # print(self.world.state)
+        # print((self.world.state == -1).astype(int))
+        # exit()
         return (self.world.state == -1).astype(int)
 
     def getGoals(self):
@@ -532,27 +535,50 @@ class MAPFEnv(gym.Env):
 
         num_agents_in_fov = len(other_robots)
         
+        # print(f"num_agents_in_fov: {num_agents_in_fov}")
+
         if obs_as_agent:        
-            world = self.getObstacleMap()
+            # world = self.getObstacleMap()
+            # print(world)
+            # exit()
 
-            # obs_shape = (self.observation_size, self.observation_size)
-            # obs_map = np.zeros(obs_shape)
+            obs_shape = (fov_density_size, fov_density_size)
+            obs_map = np.zeros(obs_shape, dtype=np.int8)
             
-            # for i in range(top_left[0], top_left[0] + self.observation_size):
-            #     for j in range(top_left[1], top_left[1] + self.observation_size):
-            #         if i >= self.world.state.shape[0] or i < 0 or j >= self.world.state.shape[1] or j < 0:
-            #             # out of bounds, just treat as an obstacle
-            #             obs_map[i - top_left[0], j - top_left[1]] = 1
-            #             continue
-            #         if self.world.state[i, j] == -1:
-            #             # obstacles
-            #             obs_map[i - top_left[0], j - top_left[1]] = 1
+            for i in range(top_left[0], top_left[0] + fov_density_size):
+                for j in range(top_left[1], top_left[1] + fov_density_size):
+                    if i >= self.world.state.shape[0] or i < 0 or j >= self.world.state.shape[1] or j < 0:
+                        # out of bounds, just treat as an obstacle
+                        obs_map[i - top_left[0], j - top_left[1]] = 1
+                        continue
+                    if self.world.state[i, j] == -1:
+                        # obstacles
+                        obs_map[i - top_left[0], j - top_left[1]] = 1
 
-            print(world)
-            exit()
-            # num_agents_in_fov += num_of_obstacles
+            # print(f"top_left: {top_left}")
+            # print("world shape:")
+            # print(self.world.state.shape)
+            # print("world:")
+            # print(self.world.state)
+            # print("world obstacle map:")
+            # print((self.world.state == -1).astype(int))
+            # print(f"fov obstacle map:\n{obs_map}")
+            
+            num_of_obstacles = np.sum(obs_map)
+            
+            # print(f"num_of_obstacles:\n{num_of_obstacles}")
+            
+            num_agents_in_fov += num_of_obstacles
+            
+            # print(f"num_agents_in_fov+obs: {num_agents_in_fov}")
         
-        if num_agents_in_fov/fov_density_size**2 >= density_threshold:
+        density = num_agents_in_fov/(fov_density_size**2)
+
+        # print(f"density: {density}")
+
+        # exit()
+
+        if density >= density_threshold:
             return -0.3
         else:
             return 0.0
@@ -642,7 +668,7 @@ class MAPFEnv(gym.Env):
                 reward = ACTION_COST
             else:
                 reward = ACTION_COST
-        reward += self.get_density_reward(agent_id)
+        reward += self.get_density_reward(agent_id) # added density reward
         self.individual_rewards[agent_id - 1] = reward
 
         if JOINT:
