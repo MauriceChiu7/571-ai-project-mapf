@@ -160,6 +160,7 @@ class State(object):
             agent_pos = self.agents[i - 1]
             if self.goals[agent_pos[0], agent_pos[1]] == i:
                 numComplete += 1
+
         return numComplete == len(self.agents)  # , numComplete/float(len(self.agents))
 
 
@@ -381,6 +382,8 @@ class MAPFEnv(gym.Env):
         if mag != 0:
             dx = dx / mag
             dy = dy / mag
+        if mag > 75:
+            mag = 75
         return ([poss_map, goal_map, goals_map, obs_map], [dx, dy, mag])
 
     # Resets environment
@@ -508,66 +511,6 @@ class MAPFEnv(gym.Env):
             world[i, j] = 0
         return path
 
-    def get_agt_count(self, agent_id, area_size):
-        robots = []
-        top_left = (self.world.getPos(agent_id)[0] - area_size // 2,
-                    self.world.getPos(agent_id)[1] - area_size // 2)
-        bottom_right = (top_left[0] + area_size,
-                        top_left[1] + area_size)
-        
-        for agent in range(1, self.num_agents):
-            # if agent == agent_id: continue # we dont want to count ourselves
-            x, y = self.world.getPos(agent)
-            if x < top_left[0] or x >= bottom_right[0] or y >= bottom_right[1] or y < top_left[1]:
-                continue
-            robots.append(agent)
-
-        num_agents_in_fov = len(robots)
-
-        return num_agents_in_fov
-
-    def get_obs_count(self, agent_id, area_size):
-        top_left = (self.world.getPos(agent_id)[0] - area_size // 2,
-                    self.world.getPos(agent_id)[1] - area_size // 2)
-        bottom_right = (top_left[0] + area_size,
-                        top_left[1] + area_size)
-        
-        obs_shape = (area_size, area_size)
-        obs_map = np.zeros(obs_shape, dtype=np.int8)
-        
-        for i in range(top_left[0], top_left[0] + area_size):
-            for j in range(top_left[1], top_left[1] + area_size):
-                if i >= self.world.state.shape[0] or i < 0 or j >= self.world.state.shape[1] or j < 0:
-                    # out of bounds, just treat as an obstacle
-                    obs_map[i - top_left[0], j - top_left[1]] = 1
-                    continue
-                if self.world.state[i, j] == -1:
-                    # obstacles
-                    obs_map[i - top_left[0], j - top_left[1]] = 1
-        
-        num_of_obstacles_fov = np.sum(obs_map)
-        
-        return num_of_obstacles_fov
-
-    def get_density_reward(self, agent_id):
-        '''calculates how many robots are in the FOV of the agent. obstacles are treated as agents'''
-        fov_size_big = 5
-        fov_size_small = 3
-        obs_as_agent = True
-        density_threshold = 0.7
-        
-        num_of_obstacles_fov = self.get_obs_count(agent_id, fov_size_small)
-        num_agents_in_fov = self.get_agt_count(agent_id, fov_size_small)
-
-        free_space_fov = fov_size_small ** 2 - num_of_obstacles_fov
-        density = num_agents_in_fov / free_space_fov
-
-        if density >= density_threshold:
-            return -0.3
-        else:
-            return 0.0
-            
-
     def get_blocking_reward(self, agent_id):
         '''calculates how many robots the agent is preventing from reaching goal
         and returns the necessary penalty'''
@@ -652,7 +595,6 @@ class MAPFEnv(gym.Env):
                 reward = ACTION_COST
             else:
                 reward = ACTION_COST
-            reward += self.get_density_reward(agent_id) # added density reward
         self.individual_rewards[agent_id - 1] = reward
 
         if JOINT:
@@ -811,10 +753,12 @@ class MAPFEnv(gym.Env):
             x = i * size
             y = j * size
             color = colors[self.world.goals[i, j]]
+            #             self.drawStar(x+size/2,y+size/2,size,4,color)
             self.create_circle(x, y, size, size, color)
             if self.world.getGoal(agent) == self.world.getPos(agent):
                 color = (0, 0, 0)
                 self.create_circle(x, y, size, size, color)
+        #                 self.drawStar(x+size/2,y+size/2,size,4,color)
         if action_probs is not None:
             n_moves = 9 if self.DIAGONAL_MOVEMENT else 5
             for agent in range(1, self.num_agents + 1):
