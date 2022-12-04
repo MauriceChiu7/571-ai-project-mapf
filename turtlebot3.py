@@ -385,7 +385,7 @@ def simulate(args):
     suc_rate_list = []
     duration_list = []
 
-    primal = PRIMAL('./PRIMAL/model_primal', 10)
+    primal = PRIMAL('./PRIMAL/model_primal_1', 10)
 
     size = 40
     print(f"RUNNING PRIMAL W/ SIZE: {size}")

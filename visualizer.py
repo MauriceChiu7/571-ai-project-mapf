@@ -38,5 +38,5 @@ if __name__ == '__main__':
     # filename = './stats/{}_duration_size{}_den{}_ntests{}.npy'.format('cbs', '40', '0.1', '50')
     # np.save(filename, [15.94, 36.94, 82.73, 0])
 
-    compare_models("suc_rate", 20, 0.1, 50)
-    compare_models("duration", 20, 0.1, 50)
+    compare_models("suc_rate", 40, 0.1, 10)
+    compare_models("duration", 40, 0.1, 10)

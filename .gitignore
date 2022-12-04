@@ -91,10 +91,12 @@ __pycache__/*
 */results/
 # od_mstar3/*
 */primal_results/
+*/primal_results_old/
 */train_primal/*
 */saved_environments
-stats/*
+*/model_primal/
+# stats/*
 *.mp4
 .idea/
-*.npy
+# *.npy
 
