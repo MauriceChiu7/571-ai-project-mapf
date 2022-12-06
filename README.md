@@ -17,7 +17,7 @@ submit batch job on Purdue scholar cluster with `sbatch strain.sh`
 
 # To test:
 - Download the `saved_environments` [here](https://drive.google.com/file/d/193mv6mhlcu9Bqxs6hSMTfSk_1GrPAiNO/view?usp=sharing) and put under PRIMAL folder. (The download will take a bit of time but should be under a minute, please be patient.)
-- Download the pretrained model of **our version of PRIMAL** [here](https://drive.google.com/file/d/1s6Xo_0lmdivFUG0ImLChVTW4plURG-3u/view?usp=share_link) and put under PRIMAL folder. (The download will take a bit of time but should be under a minute, please be patient.)
+- Download the pretrained model of **our version of PRIMAL** [here](https://drive.google.com/file/d/1GJOev_pLdOY45H_K8YN5szFgcyatPIua/view?usp=share_link) and put under PRIMAL folder. (The download will take a bit of time but should be under a minute, please be patient.)
 - Download the pretrained model of the **original PRIMAL** [here](https://drive.google.com/file/d/15B4BBAti9IMeracZmcO_yZH8WfP9cFdA/view?usp=share_link) and put under PRIMAL folder. (The download will take a bit of time but should be under a minute, please be patient.)
 - Edit path to `./PRIMAL/model_primal_1` in line 388 of the turtlebot3.py file if you want to load our model and `./PRIMAL/model_primal` if you want to use the original PRIMAL model.
 
@@ -31,7 +31,7 @@ Run: `python3 turtlebot3.py --alg cbs --no-gui --n-tests 10` in project root dir
 
 # To see the the algorithm working on simulated turtlebot robots: 
 - Download the `saved_environments` [here](https://drive.google.com/file/d/193mv6mhlcu9Bqxs6hSMTfSk_1GrPAiNO/view?usp=sharing) and put under PRIMAL folder. (The download will take a bit of time but should be under a minute, please be patient.)
-- Download the pretrained model of **our version of PRIMAL** [here](https://drive.google.com/file/d/1s6Xo_0lmdivFUG0ImLChVTW4plURG-3u/view?usp=share_link) and put under PRIMAL folder. (The download will take a bit of time but should be under a minute, please be patient.)
+- Download the pretrained model of **our version of PRIMAL** [here](https://drive.google.com/file/d/1GJOev_pLdOY45H_K8YN5szFgcyatPIua/view?usp=share_link) and put under PRIMAL folder. (The download will take a bit of time but should be under a minute, please be patient.)
 - Download the pretrained model of the **original PRIMAL** [here](https://drive.google.com/file/d/15B4BBAti9IMeracZmcO_yZH8WfP9cFdA/view?usp=share_link) and put under PRIMAL folder. (The download will take a bit of time but should be under a minute, please be patient.)
 - Edit path to `./PRIMAL/model_primal_1` in line 388 of the turtlebot3.py file if you want to load our model and `./PRIMAL/model_primal` if you want to use the original PRIMAL model.
 - Run: `python3 turtlebot3.py --alg primal --n-tests 10` in project root directory
